@@ -1,8 +1,9 @@
 <template>
   <Welcome v-if="!packageName" />
-  <div v-else class="h-screen flex bg-[#1e1e1e]">
-    <aside class="w-64 bg-[#252526] border-r border-[#3e3e42] flex flex-col">
-      <div class="px-3 py-2 text-xs text-gray-300 border-b border-[#3e3e42] font-semibold">
+  <div v-else class="h-screen flex bg-[#1e1e1e] overflow-hidden">
+    <aside ref="sidebar" class="bg-[#252526] border-r border-[#3e3e42] flex flex-col relative"
+      :style="{ width: sidebarWidth + 'px' }">
+      <div class="px-3 py-1.5 text-xs text-gray-300 border-b border-[#3e3e42] font-semibold uppercase tracking-wide">
         {{ packageName }}
       </div>
       <div class="flex-1 overflow-auto custom-scrollbar">
@@ -10,15 +11,17 @@
         <div v-else-if="error" class="p-4 text-red-400 text-xs">{{ error }}</div>
         <FileTree v-else :files="files" @select="selectFile" :selected="selectedFile" />
       </div>
+      <div class="absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-[#007acc]" @mousedown="startResize">
+      </div>
     </aside>
 
-    <main class="flex-1 flex flex-col">
+    <main class="flex-1 flex flex-col min-w-0">
       <div v-if="selectedFile"
-        class="px-4 py-2 bg-[#1e1e1e] text-gray-400 text-sm border-b border-[#3e3e42] cursor-pointer hover:bg-[#2a2d2e]"
+        class="px-4 py-1.5 bg-[#1e1e1e] text-gray-400 text-xs border-b border-[#3e3e42] cursor-pointer hover:bg-[#2a2d2e]"
         @dblclick="copyUrl" title="双击复制URL">
         {{ selectedFile }}
       </div>
-      <div ref="editorContainer" class="flex-1"></div>
+      <div ref="editorContainer" class="flex-1 overflow-hidden"></div>
     </main>
   </div>
 </template>
@@ -57,6 +60,8 @@ const selectedFile = ref('')
 const loading = ref(false)
 const error = ref('')
 const editorContainer = ref<HTMLElement | null>(null)
+const sidebar = ref<HTMLElement | null>(null)
+const sidebarWidth = ref(250)
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
 
 onMounted(async () => {
@@ -69,7 +74,7 @@ onMounted(async () => {
 
     if (editorContainer.value) {
       editor = monaco.editor.create(editorContainer.value, {
-        value: '// 加载中...',
+        value: '',
         language: 'javascript',
         theme: 'vs-dark',
         readOnly: true,
@@ -77,13 +82,7 @@ onMounted(async () => {
         fontSize: 14,
         minimap: { enabled: true },
         wordWrap: 'off',
-        scrollBeyondLastLine: true,
-        scrollbar: {
-          horizontal: 'visible',
-          vertical: 'visible',
-          horizontalScrollbarSize: 10,
-          verticalScrollbarSize: 10
-        }
+        scrollBeyondLastLine: false
       })
 
       loadPackage()
@@ -115,6 +114,8 @@ async function selectFile(path: string) {
   selectedFile.value = path
   if (!editor) return
 
+  editor.setValue('')
+
   try {
     const content = await fetchFileContent(packageName.value, path)
     const ext = path.split('.').pop() || ''
@@ -141,5 +142,24 @@ function copyUrl() {
   const version = getPackageVersion()
   const url = `https://cdn.jsdelivr.net/npm/${packageName.value}@${version}${selectedFile.value}`
   navigator.clipboard.writeText(url)
+}
+
+function startResize(e: MouseEvent) {
+  e.preventDefault()
+  const startX = e.clientX
+  const startWidth = sidebarWidth.value
+
+  const onMouseMove = (e: MouseEvent) => {
+    const newWidth = startWidth + (e.clientX - startX)
+    sidebarWidth.value = Math.max(150, Math.min(600, newWidth))
+  }
+
+  const onMouseUp = () => {
+    document.removeEventListener('mousemove', onMouseMove)
+    document.removeEventListener('mouseup', onMouseUp)
+  }
+
+  document.addEventListener('mousemove', onMouseMove)
+  document.addEventListener('mouseup', onMouseUp)
 }
 </script>

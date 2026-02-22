@@ -1,16 +1,13 @@
 <template>
   <div>
     <div @click="handleClick" :class="[
-      'px-2 py-1 cursor-pointer flex items-center gap-2 hover:bg-[#2a2d2e]',
+      'px-1 py-0.5 cursor-pointer flex items-center gap-1 hover:bg-[#2a2d2e]',
       selected === node.path ? 'bg-[#37373d]' : ''
-    ]" :style="{ paddingLeft: `${depth * 16 + 8}px` }">
-      <span v-if="node.type === 'dir'" class="text-[10px] text-gray-400">{{ expanded ? '▼' : '▶' }}</span>
+    ]" :style="{ paddingLeft: `${depth * 12 + 4}px` }">
+      <span v-if="node.type === 'dir'" class="text-[9px] text-gray-400 w-3">{{ expanded ? '▼' : '▶' }}</span>
       <span v-else class="w-3"></span>
-      <span :class="[
-        'text-xs',
-        getFileColor(node.name)
-      ]">●</span>
-      <span :class="selected === node.path ? 'text-white' : 'text-[#cccccc]'" class="text-[13px]">
+      <span :class="['text-[10px]', getFileColor(node.name)]">●</span>
+      <span :class="selected === node.path ? 'text-white' : 'text-[#cccccc]'" class="text-[13px] leading-tight">
         {{ node.name }}
       </span>
     </div>
