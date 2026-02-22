@@ -13,7 +13,9 @@
     </aside>
 
     <main class="flex-1 flex flex-col">
-      <div v-if="selectedFile" class="px-4 py-2 bg-[#1e1e1e] text-gray-400 text-sm border-b border-[#3e3e42]">
+      <div v-if="selectedFile"
+        class="px-4 py-2 bg-[#1e1e1e] text-gray-400 text-sm border-b border-[#3e3e42] cursor-pointer hover:bg-[#2a2d2e]"
+        @dblclick="copyUrl" title="双击复制URL">
         {{ selectedFile }}
       </div>
       <div ref="editorContainer" class="flex-1"></div>
@@ -31,7 +33,7 @@ import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
 import Welcome from './components/Welcome.vue'
 import FileTree from './components/FileTree.vue'
-import { fetchPackageFiles, fetchFileContent } from './utils/npm'
+import { fetchPackageFiles, fetchFileContent, getPackageVersion } from './utils/npm'
 
 self.MonacoEnvironment = {
   getWorker(_: string, label: string) {
@@ -73,7 +75,7 @@ onMounted(async () => {
         readOnly: true,
         automaticLayout: true,
         fontSize: 14,
-        minimap: { enabled: false },
+        minimap: { enabled: true },
         wordWrap: 'off',
         scrollBeyondLastLine: true,
         scrollbar: {
@@ -133,5 +135,11 @@ function getLanguage(ext: string): string {
     go: 'go', rs: 'rust', yml: 'yaml', yaml: 'yaml'
   }
   return map[ext] || 'plaintext'
+}
+
+function copyUrl() {
+  const version = getPackageVersion()
+  const url = `https://cdn.jsdelivr.net/npm/${packageName.value}@${version}${selectedFile.value}`
+  navigator.clipboard.writeText(url)
 }
 </script>

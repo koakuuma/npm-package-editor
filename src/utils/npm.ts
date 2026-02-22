@@ -11,6 +11,7 @@ interface JsDelivrFile {
 }
 
 let cachedVersion = ''
+const fileCache = new Map<string, string>()
 
 export async function fetchPackageFiles(packageName: string): Promise<FileItem[]> {
   const res = await fetch(`https://data.jsdelivr.com/v1/packages/npm/${packageName}`)
@@ -48,9 +49,20 @@ function flattenFiles(files: JsDelivrFile[], basePath: string): FileItem[] {
 }
 
 export async function fetchFileContent(packageName: string, filePath: string): Promise<string> {
+  const cacheKey = `${packageName}@${cachedVersion}${filePath}`
+
+  if (fileCache.has(cacheKey)) {
+    return fileCache.get(cacheKey)!
+  }
+
   const url = `https://cdn.jsdelivr.net/npm/${packageName}@${cachedVersion}${filePath}`
-  // console.log('Loading file:', url)
   const res = await fetch(url)
   if (!res.ok) throw new Error('文件加载失败')
-  return await res.text()
+  const content = await res.text()
+  fileCache.set(cacheKey, content)
+  return content
+}
+
+export function getPackageVersion(): string {
+  return cachedVersion
 }
