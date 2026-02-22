@@ -7,7 +7,7 @@
         {{ packageName }}
       </div>
       <div class="flex-1 overflow-auto custom-scrollbar">
-        <div v-if="loading" class="p-4 text-gray-500 text-sm">加载中...</div>
+        <div v-if="loading" class="p-4 text-gray-500 text-sm">Loading...</div>
         <div v-else-if="error" class="p-4 text-red-400 text-xs">{{ error }}</div>
         <FileTree v-else :files="files" @select="selectFile" :selected="selectedFile" />
       </div>
@@ -18,7 +18,7 @@
     <main class="flex-1 flex flex-col min-w-0">
       <div v-if="selectedFile"
         class="px-4 py-1.5 bg-[#1e1e1e] text-gray-400 text-xs border-b border-[#3e3e42] cursor-pointer hover:bg-[#2a2d2e]"
-        @dblclick="copyUrl" title="双击复制URL">
+        @dblclick="copyUrl" title="Double click to copy URL">
         {{ selectedFile }}
       </div>
       <div ref="editorContainer" class="flex-1 overflow-hidden"></div>
@@ -124,7 +124,7 @@ async function selectFile(path: string) {
     const model = editor.getModel()
     if (model) monaco.editor.setModelLanguage(model, language)
   } catch (e) {
-    editor.setValue(`// 无法加载文件: ${(e as Error).message}`)
+    editor.setValue(`// Failed to load file: ${(e as Error).message}`)
   }
 }
 
