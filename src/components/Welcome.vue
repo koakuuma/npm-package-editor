@@ -23,7 +23,7 @@ const packageName = ref('')
 
 function navigate() {
   if (packageName.value.trim()) {
-    window.location.href = `?npmpackagename=${encodeURIComponent(packageName.value.trim())}`
+    window.open(`?npmpackagename=${encodeURIComponent(packageName.value.trim())}`, '_blank')
   }
 }
 </script>

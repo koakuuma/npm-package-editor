@@ -39,7 +39,9 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits(['select'])
 
-const expanded = ref(true)
+const COLLAPSED_BY_DEFAULT = ['lib', 'dist', 'data', 'source']
+
+const expanded = ref(!COLLAPSED_BY_DEFAULT.includes(props.node.name.toLowerCase()))
 
 function handleClick() {
   if (props.node.type === 'dir') {
