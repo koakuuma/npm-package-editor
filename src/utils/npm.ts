@@ -14,18 +14,14 @@ let cachedVersion = ''
 const fileCache = new Map<string, string>()
 
 export async function fetchPackageFiles(packageName: string): Promise<FileItem[]> {
-  const encodedName = packageName.startsWith('@')
-    ? '@' + encodeURIComponent(packageName.slice(1))
-    : packageName
-
-  const res = await fetch(`https://data.jsdelivr.com/v1/packages/npm/${encodedName}`)
+  const res = await fetch(`https://data.jsdelivr.com/v1/packages/npm/${packageName}`)
   if (!res.ok) throw new Error('Package not found or network error')
 
   const data = await res.json()
   cachedVersion = data.tags?.latest || data.versions?.[0]?.version
   if (!cachedVersion) throw new Error('Failed to get version info')
 
-  const filesRes = await fetch(`https://data.jsdelivr.com/v1/packages/npm/${encodedName}@${cachedVersion}`)
+  const filesRes = await fetch(`https://data.jsdelivr.com/v1/packages/npm/${packageName}@${cachedVersion}`)
   if (!filesRes.ok) throw new Error('Failed to fetch file list')
 
   const filesData = await filesRes.json()
