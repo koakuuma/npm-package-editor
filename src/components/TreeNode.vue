@@ -39,9 +39,8 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits(['select'])
 
-const COLLAPSED_BY_DEFAULT = ['lib', 'dist', 'data', 'source']
-
-const expanded = ref(!COLLAPSED_BY_DEFAULT.includes(props.node.name.toLowerCase()))
+// 默认折叠所有文件夹
+const expanded = ref(false)
 
 function handleClick() {
   if (props.node.type === 'dir') {

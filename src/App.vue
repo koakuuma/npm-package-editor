@@ -21,7 +21,20 @@
         @dblclick="copyUrl" title="Double click to copy URL">
         {{ selectedFile }}
       </div>
-      <div ref="editorContainer" class="flex-1 overflow-hidden"></div>
+      <!-- 图片预览 -->
+      <div v-if="isImageFile" class="flex-1 overflow-auto flex items-center justify-center bg-[#1e1e1e]">
+        <img :src="imageUrl" :alt="selectedFile" class="max-w-full max-h-full object-contain" />
+      </div>
+      <!-- 二进制文件提示 -->
+      <div v-else-if="isBinaryFile" class="flex-1 flex items-center justify-center bg-[#1e1e1e]">
+        <div class="text-center text-gray-400">
+          <div class="text-4xl mb-4">📦</div>
+          <div class="text-sm">暂不支持预览二进制文件</div>
+          <div class="text-xs mt-2 text-gray-500">{{ selectedFile }}</div>
+        </div>
+      </div>
+      <!-- 代码编辑器 -->
+      <div v-else ref="editorContainer" class="flex-1 overflow-hidden"></div>
     </main>
   </div>
 </template>
@@ -62,6 +75,9 @@ const error = ref('')
 const editorContainer = ref<HTMLElement | null>(null)
 const sidebar = ref<HTMLElement | null>(null)
 const sidebarWidth = ref(250)
+const isImageFile = ref(false)
+const isBinaryFile = ref(false)
+const imageUrl = ref('')
 let editor: monaco.editor.IStandaloneCodeEditor | null = null
 
 onMounted(async () => {
@@ -100,9 +116,7 @@ async function loadPackage() {
 
   try {
     files.value = await fetchPackageFiles(packageName.value)
-    if (files.value.length > 0) {
-      selectFile(files.value[0].path)
-    }
+    // 不再自动选择第一个文件
   } catch (e) {
     error.value = (e as Error).message
   } finally {
@@ -112,13 +126,35 @@ async function loadPackage() {
 
 async function selectFile(path: string) {
   selectedFile.value = path
+  const ext = path.split('.').pop()?.toLowerCase() || ''
+  
+  // 检查是否为图片文件
+  const imageExts = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'bmp', 'ico']
+  if (imageExts.includes(ext)) {
+    isImageFile.value = true
+    isBinaryFile.value = false
+    const version = getPackageVersion()
+    imageUrl.value = `https://cdn.jsdelivr.net/npm/${packageName.value}@${version}${path}`
+    return
+  }
+  
+  // 检查是否为二进制文件（字体等）
+  const binaryExts = ['ttf', 'otf', 'woff', 'woff2', 'eot', 'zip', 'tar', 'gz', 'rar', '7z', 'exe', 'dll', 'so', 'dylib']
+  if (binaryExts.includes(ext)) {
+    isImageFile.value = false
+    isBinaryFile.value = true
+    return
+  }
+  
+  // 文本文件用编辑器打开
+  isImageFile.value = false
+  isBinaryFile.value = false
   if (!editor) return
 
   editor.setValue('')
 
   try {
     const content = await fetchFileContent(packageName.value, path)
-    const ext = path.split('.').pop() || ''
     const language = getLanguage(ext)
     editor.setValue(content)
     const model = editor.getModel()
