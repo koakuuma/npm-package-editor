@@ -106,6 +106,18 @@ self.MonacoEnvironment = {
   }
 }
 
+monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+  allowJs: true,
+  jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+  target: monaco.languages.typescript.ScriptTarget.ES2020
+})
+
+monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+  allowJs: true,
+  jsx: monaco.languages.typescript.JsxEmit.ReactJSX,
+  target: monaco.languages.typescript.ScriptTarget.ES2020
+})
+
 const packageName = ref('')
 const files = ref<FileItem[]>([])
 const selectedFile = ref('')
@@ -228,7 +240,7 @@ async function selectFile(path: string) {
 
   try {
     const content = await fetchFileContent(packageName.value, path)
-    const language = getLanguage(ext)
+    const language = getLanguage(path)
     editor.setValue(content)
     const model = editor.getModel()
     if (model) {
@@ -280,10 +292,13 @@ function handleDocumentClick(event: MouseEvent) {
   }
 }
 
-function getLanguage(ext: string): string {
+function getLanguage(path: string): string {
+  const ext = path.split('.').pop()?.toLowerCase() || ''
   const map: Record<string, string> = {
     js: 'javascript',
+    jsx: 'javascript',
     ts: 'typescript',
+    tsx: 'typescript',
     json: 'json',
     vue: 'html',
     html: 'html',

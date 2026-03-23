@@ -54,7 +54,9 @@ function getFileColor(name: string): string {
   const ext = name.split('.').pop()?.toLowerCase()
   const colors: Record<string, string> = {
     js: 'text-yellow-400',
+    jsx: 'text-yellow-300',
     ts: 'text-blue-400',
+    tsx: 'text-cyan-400',
     json: 'text-yellow-300',
     vue: 'text-green-400',
     html: 'text-orange-400',
